@@ -187,21 +187,21 @@ set(COMMON_INC_FILES
 )
 set(COMMON_FILES ${COMMON_SRC_FILES} ${COMMON_INC_FILES})
 
-set(AMENT_COMMON_DEPENDENCIES
-  rclcpp
-  rclcpp_lifecycle
-  std_msgs
-  std_srvs
-  lifecycle_msgs
-  sensor_msgs
-  geometry_msgs
-  nav_msgs
-  nmea_msgs
-  rtcm_msgs
-  tf2
-  tf2_ros
-  tf2_geometry_msgs
-  microstrain_inertial_msgs
+set(AMENT_COMMON_TARGETS
+  rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
+  std_msgs::std_msgs__rosidl_typesupport_cpp
+  std_srvs::std_srvs__rosidl_typesupport_cpp
+  lifecycle_msgs::lifecycle_msgs__rosidl_typesupport_cpp
+  sensor_msgs::sensor_msgs__rosidl_typesupport_cpp
+  geometry_msgs::geometry_msgs__rosidl_typesupport_cpp
+  nav_msgs::nav_msgs__rosidl_typesupport_cpp
+  nmea_msgs::nmea_msgs__rosidl_typesupport_cpp
+  rtcm_msgs::rtcm_msgs__rosidl_typesupport_cpp
+  tf2::tf2
+  tf2_ros::tf2_ros
+  tf2_geometry_msgs::tf2_geometry_msgs
+  microstrain_inertial_msgs::microstrain_inertial_msgs__rosidl_typesupport_cpp
 )
 
 # Plain node
@@ -215,9 +215,6 @@ set(NODE_INC_FILES
 )
 set(NODE_FILES ${NODE_SRC_FILES} ${NODE_INC_FILES})
 add_executable(${NODE_NAME} ${NODE_FILES} ${COMMON_FILES})
-ament_target_dependencies(${NODE_NAME}
-  ${AMENT_COMMON_DEPENDENCIES}
-)
 
 # Lifecycle node
 set(LIFECYCLE_NAME ${PROJECT_NAME}_lifecycle_node)
@@ -231,9 +228,6 @@ set(LIFECYCLE_INC_FILES
 set(LIFECYCLE_FILES ${LIFECYCLE_SRC_FILES} ${LIFECYCLE_INC_FILES})
 add_executable(${LIFECYCLE_NAME} ${LIFECYCLE_FILES} ${COMMON_FILES})
 target_compile_definitions(${LIFECYCLE_NAME} PUBLIC MICROSTRAIN_LIFECYCLE)
-ament_target_dependencies(${LIFECYCLE_NAME}
-  ${AMENT_COMMON_DEPENDENCIES}
-)
 
 # Annoying, but the ROS types don't match up with the MIP types for floats and doubles, so ignore those warnings for now
 set_source_files_properties(${COMMON_SRC_DIR}/services.cpp PROPERTIES COMPILE_OPTIONS "-Wno-narrowing")
@@ -264,14 +258,16 @@ if(DEFINED ENV{ROS_DISTRO})
 endif()
 
 # Linking
-target_link_libraries(${LIFECYCLE_NAME}
+target_link_libraries(${LIFECYCLE_NAME} PRIVATE
+  ${AMENT_COMMON_TARGETS}
   mip
   microstrain
   microstrain_serial
   microstrain_recording_connection
   ${GeographicLib_LIBRARIES}
 )
-target_link_libraries(${NODE_NAME}
+target_link_libraries(${NODE_NAME} PRIVATE
+  ${AMENT_COMMON_TARGETS}
   mip
   microstrain
   microstrain_serial
